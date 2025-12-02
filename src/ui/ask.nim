@@ -1,0 +1,119 @@
+import illwill, os, terminal, strutils
+import asset
+
+type
+  Questionable* {.inheritable.} = ref object of RootObj
+    title*: string
+
+proc renderItems[T: Questionable](tb: var TerminalBuffer, data: openArray[T], 
+                                  termWidth: int, startY: int, 
+                                  selected: int, pageStart: int, pageEnd: int) =
+  ## Render list items dengan highlight untuk item terpilih
+  var row = startY
+  
+  for i in pageStart ..< pageEnd:
+    let item = data[i]
+    let contentLen = item.title.len + 2
+    let padding = termWidth - contentLen - 2
+    
+    if i == selected:
+      # Item terpilih dengan highlight
+      tb.write(0, row, fgCyan, "║", resetStyle)
+      tb.setBackgroundColor(bgGreen)
+      tb.setForegroundColor(fgBlack, bright=true)
+      tb.write(1, row, "► " & item.title & " ".repeat(padding))
+      tb.resetAttributes()
+      tb.write(termWidth - 1, row, fgCyan, "║")
+    else:
+      # Item biasa
+      tb.write(0, row, fgCyan, "║", fgWhite, "  " & item.title & " ".repeat(padding), fgCyan, "║")
+    
+    inc row
+
+proc ask*[T: Questionable](data: seq[T], pageSize: int = 30, title: string = "Firaun makan nasi"): T =
+  if data.len == 0:
+    raise newException(ValueError, "Data cannot be empty")
+  
+  var selected = 0
+  var pageStart = 0
+  let termWidth = terminalWidth()
+  let itemsPerPage = pageSize
+  const BANNER_HEIGHT = 7
+  
+  proc cleanup() {.noconv.} =
+    illwillDeinit()
+    showCursor()
+    quit(0)
+  
+  illwillInit(fullscreen=false)
+  setControlCHook(cleanup)
+  hideCursor()
+  
+  var tb = newTerminalBuffer(termWidth, terminalHeight())
+  
+  proc updatePageStart() =
+    # Auto scroll pagination
+    if selected < pageStart:
+      pageStart = selected
+    elif selected >= pageStart + itemsPerPage:
+      pageStart = selected - itemsPerPage + 1
+  
+  proc render() =
+    tb.clear()
+    updatePageStart()
+    
+    # Render banner
+    renderBanner(tb, termWidth)
+    
+    # Hitung posisi dan range
+    let topBorderY = BANNER_HEIGHT
+
+    let itemsStartY = topBorderY + 1
+    let pageEnd = min(pageStart + itemsPerPage, data.len)
+    let bottomBorderY = itemsPerPage + 1
+    
+    # Render komponen
+    renderTopBorder(tb, termWidth, topBorderY, title=title)
+    renderItems(tb, data, termWidth, itemsStartY, selected, pageStart, pageEnd)
+    renderEmptyRows(tb, termWidth, itemsStartY + (pageEnd - pageStart), itemsPerPage)
+    renderBottomBorder(tb, termWidth, bottomBorderY)
+    
+    tb.display()
+  
+  render()
+  
+  while true:
+    var key = getKey()
+    
+    case key
+    of Key.None: discard
+    of Key.Up, Key.K:
+      selected = if selected > 0: selected - 1 else: data.len - 1
+      render()
+    of Key.Down, Key.J:
+      selected = if selected < data.len - 1: selected + 1 else: 0
+      render()
+    of Key.PageUp:
+      selected = max(0, selected - itemsPerPage)
+      render()
+    of Key.PageDown:
+      selected = min(data.len - 1, selected + itemsPerPage)
+      render()
+    of Key.Home:
+      selected = 0
+      render()
+    of Key.End:
+      selected = data.len - 1
+      render()
+    of Key.Enter, Key.Space:
+      illwillDeinit()
+      showCursor()
+      # eraseScreen()
+      return data[selected]
+    of Key.Escape, Key.Q:
+      illwillDeinit()
+      showCursor()
+      quit(0)
+    else: discard
+    
+    sleep(20)
