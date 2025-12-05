@@ -4,6 +4,7 @@ import re
 import xmltree
 import options
 import ../base
+import ../types
 import ../../http/[
   client,
   response
@@ -23,13 +24,15 @@ method sInit*(ex: AnimepaheEX) : InfoExtractor =
 
 method animes*(ex: AnimepaheEX, title: string) : seq[AnimeData] =
   var res_json = ex.connection.req("/api?m=search&q=" & title).to_json()
-  for anime in res_json["data"] :
-    result.add AnimeData(
-      title: anime["title"].getStr(),
-      url: ex.connection.normalize_url(
-        "/anime/" & anime["session"].getStr()
+  if res_json.hasKey("data") :
+    for anime in res_json["data"] :
+      result.add AnimeData(
+        title: anime["title"].getStr(),
+        url: ex.connection.normalize_url(
+          "/anime/" & anime["session"].getStr()
+        )
       )
-    )
+  else : raise newException(AnimeNotFoundError, "Animepahe Gagal jir")      
 
 proc get_by_index(ex: AnimepaheEX, session: string, index: int = 1, sort: string = "asc") : tuple[all: JsonNode, total: int] =
   var
@@ -97,6 +100,7 @@ method formats*(ex: AnimepaheEX, url: string) : seq[ExFormatData] =
         fansub = button.attr("data-fansub")
         audio = button.attr("data-audio")
         resolution = button.attr("data-resolution")
+
       result.add ExFormatData(
         title: "$#, $#, $#" % [fansub, audio, resolution],
         format_identifier: source,
@@ -134,7 +138,6 @@ proc force_get_index(script: string, vault: string) : string =
     else:
       raise newException(ValueError, "Not digit")
   except:
-    # Method 2: "m3u8|uwu|" + 9 + 65
     try:
       let start = script.find("m3u8|uwu|") + 9 + 65
       let endPos = start + 2
@@ -143,7 +146,6 @@ proc force_get_index(script: string, vault: string) : string =
       if index.allCharsInSet({'0'..'9'}):
         return index
       
-      # Method 3: "|source|" + 8
       let start2 = script.find("|source|") + 8
       let endPos2 = start2 + 2
       index = script[start2 ..< endPos2]
@@ -151,7 +153,6 @@ proc force_get_index(script: string, vault: string) : string =
       if index.allCharsInSet({'0'..'9'}):
         return index
       
-      # Method 4: "/H/" + 3
       let start3 = script.find("/H/") + 3
       let endPos3 = start3 + 2
       index = script[start3 ..< endPos3]
@@ -181,6 +182,7 @@ proc get_m3u8_data(url: string, page: XmlNode) : array[8, string] =
   ]
 
 method get*(ex: AnimepaheEX, format: ExFormatData) : MediaFormatData =
+  ex.info("Get Format Information")
   let
     format_page = ex.connection.req(format.format_identifier, host="kwik.cx").to_selector()
     m3u8_data = format.format_identifier.get_m3u8_data(format_page)
