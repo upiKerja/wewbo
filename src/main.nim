@@ -9,54 +9,74 @@ import ui/[
   controller,
 ]
 import ./options
-import ./extractor/all
+import ./extractor/[all, types]
 import ./player/all
 
-proc main*() =
+proc setPlayer() : Player =
   var
-    anime: AnimeData
-    anime_url: string
-    episodes: seq[EpisodeData]
-    episode: EpisodeData
-    start_idx: int
-    playerName: string
-
-  let
     players = getAvailabePlayer()
-    title = optionsParser.nargs[0]
-    extractorName = optionsParser.get("name").getStr()
-    extractor = get_extractor_from_source(extractorName)
-    animes = extractor.animes(title)
+    playerName = optionsParser.get("player").getStr()
 
   if players.len < 1 :
     raise newException(ValueError, "There are no Players available on your device")
-
-  if animes.len < 1 :
-    raise newException(ValueError, "No anime found")
-
-  anime = animes.ask(title="Searching for '$#'" % [title])
-  anime_url = extractor.get anime
-  episodes = extractor.episodes anime_url
-
-  if episodes.len < 1 :
-    raise newException(ValueError, "No episode found")
-
-  episode = episodes.ask(title = anime.title)
-  start_idx = episodes.find episode
-  playerName = optionsParser.get("player").getStr()
-
-  if playerName == "" and players.contains("mpv") :
-    playerName = "mpv"
-
   else :
-    playerName = "ffplay"
+    if playerName == "" and players.contains("mpv") : playerName = "mpv"
+    else : playerName = "ffplay"
+
+  getPlayer(playerName)    
+
+proc askAnime(ex: BaseExtractor, title: string) : AnimeData {.raises: [AnimeNotFoundError, Exception].} =
+  var listAnime = ex.animes(title)
+  if listAnime.len < 1 :
+    raise newException(AnimeNotFoundError, "No Anime Found")
+  return listAnime.ask()
+
+proc askEpisode(ex: BaseExtractor, ad: AnimeData) : tuple[index: int, episodes: seq[EpisodeData]] {.raises: [EpisodeNotFoundError, Exception].} =
+  var
+    index: int
+    episode: EpisodeData
+  let
+    animeUrl = ex.get(ad)
+    listEpisode = ex.episodes(animeUrl)
+
+  if listEpisode.len < 1 :
+    raise newException(EpisodeNotFoundError, "No Episode Found")
+
+  episode = listEpisode.ask()
+  index = listEpisode.find(episode)
+
+  return (index: index, episodes: listEpisode)
+
+
+proc main*(title: string, extractorName: string) =
+  var
+    anime: AnimeData
+    extractor: BaseExtractor
+  
+  try :
+    extractor = getExtractor(extractorName)
+    anime = askAnime(extractor, title)
+
+  except AnimeNotFoundError :
+    echo "Failed to fetch anime from '$#' trying with 'pahe' instead" % [extractor.name]
+    extractor = getExtractor("pahe")
+    anime = askAnime(extractor, title)
+
+  let (start_idx, episodes) = askEpisode(extractor, anime)
 
   main_controller_loop(
     extractor,
-    getPlayer(playerName),
+    setPlayer(),
     episodes,
     start_idx
   )  
 
 when isMainModule :
-  main()
+  try :
+    let
+      exName = optionsParser.get("name").getStr()
+      title = optionsParser.nargs[0]
+    main(title, exName)
+
+  except IndexDefect :
+    echo "No title provided. Try: `wewbo [Anime Title]`"      
