@@ -64,7 +64,7 @@ proc ask*[T: Questionable](data: seq[T], pageSize: int = terminalHeight() - 2, t
     updatePageStart()
     
     # Render banner
-    renderBanner(tb, termWidth)
+    renderBanner(tb)
     
     # Hitung posisi dan range
     let topBorderY = BANNER_HEIGHT
