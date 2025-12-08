@@ -21,8 +21,12 @@ type
     crf: int = 28
     fps: int = 25
 
+proc newFfmpegDownloader() : FfmpegDownloader =
+  result.name = "ffmpeg"
+  result.setUp()
+
 proc setHeader(ffmpeg: FfmpegDownloader, ty, val: string) =
-  var ngantukCok = {
+  let ngantukCok = {
     "userAgent" : "User-Agent",
     "referer" : "Referer",
     "cookie" : "Cookie"
@@ -51,19 +55,22 @@ proc setGatauIniApa(ffmpeg: FfmpegDownloader) =
   ffmpeg.addArg "-r"
   ffmpeg.addArg $ffmpeg.fps
 
-
-proc setInput(ffmpeg: FfmpegDownloader) =
+proc setInput(ffmpeg: FfmpegDownloader, media: MediaFormatData) =
   ffmpeg.addArg "-i"
-  ffmpeg.addArg ffmpeg.input.video
+  ffmpeg.addArg media.video
 
 proc setOutput(ffmpeg: FfmpegDownloader) =
   ffmpeg.addArg "LinuxRijal.mp4"
 
-proc download*(ffmpeg: FfmpegDownloader) : int =
+proc download*(ffmpeg: FfmpegDownloader, input: MediaFormatData) : bool =
   ffmpeg.setUpHeader()
-  ffmpeg.setInput()
+  ffmpeg.setInput(input)
   ffmpeg.setGatauIniApa()
   ffmpeg.setOutput()
+
+proc downloadAll*(ffmpeg: FfmpegDownloader, inputs: openArray[MediaFormatData]) : seq[bool] =
+  for input in inputs :
+    result.add(ffmpeg.download(input))
 
 when isMainModule  :
   var
@@ -76,10 +83,10 @@ when isMainModule  :
       typeExt: extM3u8,
       headers: palla.some
     )
-    rijal = FfmpegDownloader(input: media, name: "ffmpeg")
+    rijal = newFfmpegDownloader()
 
   discard rijal.setUp()
-  discard rijal.download()
+  discard rijal.download(media)
   echo rijal.execute()
 
   # discard curl.download()

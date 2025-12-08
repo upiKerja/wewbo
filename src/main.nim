@@ -90,4 +90,3 @@ proc main*() =
     eraseScreen()
     showCursor()
     quit(1) 
-
