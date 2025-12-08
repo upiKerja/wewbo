@@ -9,17 +9,20 @@ discard """
 """
 
 import
+  os,
   options,
   strutils,
+  sequtils,
   tables,
   ../process,
   ../media/types
 
 type
   FfmpegDownloader = ref object of CliApplication
-    input: MediaFormatData
+    outdir*: string = "."
     crf: int = 28
     fps: int = 25
+    itr: int = 0
 
 proc newFfmpegDownloader() : FfmpegDownloader =
   result.name = "ffmpeg"
@@ -35,10 +38,9 @@ proc setHeader(ffmpeg: FfmpegDownloader, ty, val: string) =
   ffmpeg.addArg "-headers"
   ffmpeg.addArg "$#: $#" % [ngantukCok[ty], val]
 
-proc setUpHeader(ffmpeg: FfmpegDownloader) =
-  let kepala = ffmpeg.input.headers
-  if kepala.isSome :
-    for chi, no in kepala.get.fieldPairs() :
+proc setUpHeader(ffmpeg: FfmpegDownloader, headers: Option[MediaHttpHeader]) =
+  if headers.isSome :
+    for chi, no in headers.get.fieldPairs() :
       if no != "" :
         ffmpeg.setHeader(chi, no)
 
@@ -59,18 +61,21 @@ proc setInput(ffmpeg: FfmpegDownloader, media: MediaFormatData) =
   ffmpeg.addArg "-i"
   ffmpeg.addArg media.video
 
-proc setOutput(ffmpeg: FfmpegDownloader) =
-  ffmpeg.addArg "LinuxRijal.mp4"
+proc setOutput(ffmpeg: FfmpegDownloader, output: string) =
+  ffmpeg.addArg ffmpeg.outdir / output
 
-proc download*(ffmpeg: FfmpegDownloader, input: MediaFormatData) : bool =
-  ffmpeg.setUpHeader()
+proc download*(ffmpeg: FfmpegDownloader, input: MediaFormatData, output: string) : int =
+  ffmpeg.setUpHeader(input.headers)
   ffmpeg.setInput(input)
   ffmpeg.setGatauIniApa()
-  ffmpeg.setOutput()
+  ffmpeg.setOutput(output)
+  ffmpeg.execute()
 
-proc downloadAll*(ffmpeg: FfmpegDownloader, inputs: openArray[MediaFormatData]) : seq[bool] =
-  for input in inputs :
-    result.add(ffmpeg.download(input))
+proc downloadAll*(ffmpeg: FfmpegDownloader, inputs: openArray[MediaFormatData], outputs: openArray[string]) : seq[int] =
+  assert inputs.len == outputs.len
+  for apate in zip(inputs, outputs) :
+    result.add(
+      ffmpeg.download(apate[0], apate[1]))
 
 when isMainModule  :
   var
@@ -86,7 +91,7 @@ when isMainModule  :
     rijal = newFfmpegDownloader()
 
   discard rijal.setUp()
-  discard rijal.download(media)
+  discard rijal.downloadAll([media], ["episode1.mp4"])
   echo rijal.execute()
 
   # discard curl.download()
