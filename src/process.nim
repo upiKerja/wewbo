@@ -51,11 +51,11 @@ proc setUp[T: CliApplication](app: T, path: string = app.name) : T =
 proc addArg(app: CliApplication, arg: string) =
   app.args.add arg
 
-proc execute(app: CliApplication, clearArgs: bool = true) : int =
+proc execute(app: CliApplication, message: string = "Executing external app.", clearArgs: bool = true) : int =
   app.process = startProcess(app.path, ".", app.args)
   if clearArgs :
     app.args = @[]
-  app.process.show_log_until_complete()
+  app.process.show_log_until_complete(message)
 
 export
   CliApplication,
