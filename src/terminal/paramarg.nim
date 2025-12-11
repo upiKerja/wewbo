@@ -64,12 +64,12 @@ proc convert(val: string, target: AllowedValType) : JsonNode =
   except :
     result = %*{} 
 
-proc add(fa: FullArgument, flagT: string, nameT: string, valT: AllowedValType, defaultT: auto = "") =  
-  var defa = convert($defaultT, valT)
+proc add(fa: FullArgument, flag: string, name: string, val: AllowedValType, default: auto = "") =  
+  var defa = convert($default, val)
   fa.options.add ArgOption(
-      flag: flagT,
-      name: nameT,
-      valType: valT,
+      flag: flag,
+      name: name,
+      valType: val,
       default: defa
     )
 
