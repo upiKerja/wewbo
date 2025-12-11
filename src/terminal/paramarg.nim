@@ -5,7 +5,7 @@ import
   options
 
 type
-  AllowedValType = enum
+  AllowedValType* = enum
     tString,
     tInt,
     tSeq,
@@ -27,7 +27,7 @@ type
     seperator*: string = ":"
     parsed: JsonNode = %*{}
 
-proc loadArguments(args: seq[string] = @[]) : FullArgument =
+proc loadArguments*(args: seq[string] = @[]) : FullArgument =
   var rArgs = args
   
   if args.len == 0 :
@@ -64,7 +64,7 @@ proc convert(val: string, target: AllowedValType) : JsonNode =
   except :
     result = %*{} 
 
-proc add(fa: FullArgument, flag: string, name: string, val: AllowedValType, default: auto = "") =  
+proc add*(fa: FullArgument, flag: string, name: string, val: AllowedValType, default: auto = "") =  
   var defa = convert($default, val)
   fa.options.add ArgOption(
       flag: flag,
@@ -80,7 +80,7 @@ proc fill_from_default(fa: FullArgument) =
     else :
       discard
 
-proc parse(fa: FullArgument) =
+proc parse*(fa: FullArgument) =
   var
     base: seq[string]
     faKey: string
@@ -117,10 +117,9 @@ template get(fa: FullArgument, name: string) : JsonNode =
 
 export
   FullArgument,
-  AllowedValType,
-  loadArguments,
-  add,
-  parse,
+  AllowedValType
+
+export  
   getStr,
   getInt,
   getBool,
