@@ -6,16 +6,34 @@ import
   os
 
 type
-  SubCommandProc = proc(narg: seq[string], args: FullArgument) {.nimcall.}
+  SubCommandProc = proc(args: FullArgument) {.nimcall.}
 
   SubCommand = ref object of RootObj
     name*: string
     entry*: SubCommandProc
     args: FullArgument
+    argOpts: seq[ArgOption]
+
+proc newSubCommand(name: string, entry: SubCommandProc, argOpts: seq[ArgOption]) : SubCommand {.gcsafe.} =
+  SubCommand(
+    name: name,
+    entry: entry,
+    args: loadArguments(),
+    argOpts: argOpts
+  )
+
+proc options(flag: string, name: string, val: AllowedValType, default: auto = "") : ArgOption {.gcsafe.} =
+  ArgOption(
+    flag: flag,
+    name: name,
+    valType: val,
+    default: convert($default, val)
+  )
 
 proc exec(command: SubCommand) =
+  command.args.add(command.argOpts)
   command.args.parse()
-  command.entry(command.args.nargs, command.args)
+  command.entry(command.args)
 
 proc start(subCommands: openArray[SubCommand]) =
   try:
@@ -26,30 +44,6 @@ proc start(subCommands: openArray[SubCommand]) =
         quit(0)
     assert false
 
-  except AssertionDefect:
-    subCommands[0].exec()
-
-proc newSubCommand(name: string, entry: SubCommandProc) : SubCommand =
-  SubCommand(
-    name: name,
-    entry: entry,
-    args: loadArguments()
-  )
-
-proc addArg(command: SubCommand, flag: string, name: string, val: AllowedValType, default: auto = "") =
-  command.args.add(flag, name, val, default)
-
-when isMainModule :
-  proc rijal(n: seq[string]; e: FullArgument) =
-    echo e.get("name").getStr()
-
-  var d = newSubCommand("download", rijal)
-
-  d.addArg(
-    flag= "-n",
-    name= "name",
-    val= tString,
-    default= "rijal"
-  )
-
-  d.exec()
+  except AssertionDefect, IndexDefect:
+    # Default entry
+    subCommands[0].exec()  
