@@ -16,7 +16,7 @@ import ./player/all
 
 proc setPlayer() : Player =
   var
-    playerName = optionsParser.get("player").getStr()
+    playerName = optionsParser["player"].getStr()
 
   if players.len < 1 :
     raise newException(ValueError, "There are no Players available on your device")
@@ -75,7 +75,7 @@ proc main*(title: string, extractorName: string) =
 proc main*() =
   try :
     let
-      exName = optionsParser.get("name").getStr()
+      exName = optionsParser["name"].getStr()
       title = optionsParser.nargs[0]
     main(title, exName)
 

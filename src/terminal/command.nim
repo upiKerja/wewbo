@@ -47,3 +47,12 @@ proc start(subCommands: openArray[SubCommand]) =
   except AssertionDefect, IndexDefect:
     # Default entry
     subCommands[0].exec()  
+
+
+export
+  SubCommand
+
+export
+  newSubCommand,
+  options,
+  start

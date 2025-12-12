@@ -119,9 +119,6 @@ proc parse*(fa: FullArgument) {.gcsafe.} =
     else :
       fa.nargs.add arg
 
-template get(fa: FullArgument, name: string) : JsonNode {.deprecated.} =
-  fa.parsed[name]
-
 proc `[]`*(fa: FullArgument, key: string) : JsonNode {.gcsafe.} =
   fa.parsed[key]
 
@@ -132,5 +129,4 @@ export
 export  
   getStr,
   getInt,
-  getBool,
-  get
+  getBool
