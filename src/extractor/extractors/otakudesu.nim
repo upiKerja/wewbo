@@ -144,7 +144,7 @@ method get*(ex: OtakudesuEX, data: ExFormatData) : MediaFormatData =
       video = response.to_selector().select("source")[0].attr("src")
 
     let
-      header = MediaHttpHeader(userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) Gecko/20100101 Firefox/146.0")      
+      header = MediaHttpHeader(userAgent: ex.userAgent)      
       media = MediaFormatData(
         video: video,
         typeExt: extMp4,

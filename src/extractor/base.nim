@@ -43,6 +43,7 @@ proc init*[T: BaseExtractor](
   resolution: FormatResolution = best
 ) =
   extractor.lg = log
+  extractor.userAgent = userAgent
   extractor.connection = newHttpConnection(
     extractor.host,
     userAgent,
