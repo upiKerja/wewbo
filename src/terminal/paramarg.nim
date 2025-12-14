@@ -6,14 +6,15 @@ import
 
 type
   AllowedValType* = enum
-    tString,
-    tInt,
-    tSeq,
-    tBool,
+    tString = "string",
+    tInt = "int",
+    tSeq = "list",
+    tBool = "true|false",
 
   ArgOption* = ref object of RootObj
     flag*: string
     name*: string
+    help*: string
     valType*: AllowedValType
     default*: JsonNode
 
@@ -64,7 +65,7 @@ proc convert*(val: string, target: AllowedValType) : JsonNode {.gcsafe.} =
   except :
     result = %*{} 
 
-proc add*(fa: FullArgument, flag: string, name: string, val: AllowedValType, default: auto = "") {.gcsafe.} =  
+proc add*(fa: FullArgument, flag: string, name: string, val: AllowedValType, default: auto = "") {.gcsafe, deprecated.} =  
   let defa = convert($default, val)
   fa.options.add ArgOption(
       flag: flag,
@@ -72,6 +73,15 @@ proc add*(fa: FullArgument, flag: string, name: string, val: AllowedValType, def
       valType: val,
       default: defa
     )
+
+proc option*(flag: string, name: string, val: AllowedValType, default: auto = "", help: string = "") : ArgOption {.gcsafe.} =
+  ArgOption(
+    flag: flag,
+    name: name,
+    valType: val,
+    default: convert($default, val),
+    help: help
+  )    
 
 proc add(fa: FullArgument, argOpt: ArgOption) =
   fa.options.add(argOpt)

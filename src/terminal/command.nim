@@ -2,9 +2,10 @@ import
   paramarg
 
 import
-  tables,
   os,
-  sequtils
+  sequtils,
+  strutils,
+  terminal
 
 type
   SubCommandProc = proc(args: FullArgument) {.nimcall.}
@@ -16,38 +17,60 @@ type
     argOpts: seq[ArgOption]
 
 proc newSubCommand(name: string, entry: SubCommandProc, argOpts: seq[ArgOption]) : SubCommand {.gcsafe.} =
-  SubCommand(
+  result = SubCommand(
     name: name,
     entry: entry,
     args: loadArguments(),
     argOpts: argOpts
   )
-
-proc options(flag: string, name: string, val: AllowedValType, default: auto = "") : ArgOption {.gcsafe.} =
-  ArgOption(
-    flag: flag,
-    name: name,
-    valType: val,
-    default: convert($default, val)
-  )
+  result.args.add(argOpts)
 
 proc exec(command: SubCommand, removeName: bool = true) =
-  command.args.add(command.argOpts)
   command.args.parse()
   if removeName :
     command.args.nargs.delete(0..0)
   command.entry(command.args)
 
+proc perLine(li: array[2, string], pl: int = terminalWidth() div 3) : string =
+  let
+    asd = li[0]
+    usd = li[1]
+  if asd.len < pl :
+    return asd & " ".repeat(pl - asd.len) & usd
+  else :
+    return asd[0 .. pl - 1] & " " & usd
+
+proc showHelp(subCommand: SubCommand) =
+  echo subCommand.name
+  for arg in subCommand.args.options :
+    echo " " & perLine([arg.flag, arg.help], 15)
+
+proc showHelp(subCommnads: openArray[SubCommand]) =
+  echo "list command: `wewbo [command][opts][narg]`\n"
+  for subCmd in subCommnads:
+    subCmd.showHelp()
+    echo ""
+  discard  
+
 proc start(subCommands: openArray[SubCommand]) =
   try:
     let nuhun = commandLineParams()[0]
-    for subCmd in subCommands :
-      if nuhun == subCmd.name :
-        subCmd.exec()
-        quit(0)
+    if nuhun == "--help" or nuhun == "-h" :
+      subCommands.showHelp()
+      quit(0)
+
+    else :
+      for subCmd in subCommands :
+        if nuhun == subCmd.name :
+          subCmd.exec()
+          quit(0)
+    
     assert false
 
-  except AssertionDefect, IndexDefect:
+  except IndexDefect:
+    subCommands.showHelp()
+
+  except AssertionDefect:
     # Default entry
     subCommands[0].exec(removeName = false)  
 
@@ -56,5 +79,5 @@ export
 
 export
   newSubCommand,
-  options,
+  option,
   start

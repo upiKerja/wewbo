@@ -1,29 +1,30 @@
 import
   stream,
   download,
-  version,
-  logger
+  version
 
 import
   terminal/[command, paramarg]
 
+const sourceHelp = "Select Source [kura|pahe|hian|taku]"
+
 let app = [
   newSubCommand(
     "stream", stream.stream, @[
-      options("-s", "source", tString, "kura"),
-      options("-p", "player", tString)
+      option("-s", "source", tString, "kura", sourceHelp),
+      option("-p", "player", tString, help="Select Player [ffmpeg|mpv]")
     ]
   ),
   newSubCommand(
-    "download", download.download, @[
-      options("-s", "source", tString, "kura"),
-      options("--outdir", "outdir", tString),
-      options("-fps", "fps", tInt, 24),
-      options("-crf", "crf", tInt, 28),
-      options("--no-sub", "nsub", tBool, false)
+    "dl", download.download, @[
+      option("-s", "source", tString, "kura", sourceHelp),
+      option("--outdir", "outdir", tString, help="Define output directory"),
+      option("-fps", "fps", tInt, 24, "Set Video frame per second"),
+      option("-crf", "crf", tInt, 28, "Set Video CRF (For compression)"),
+      option("--no-sub", "nsub", tBool, false, "Dont include subtitle (Soft-sub only)")
     ]
   )
 ]
 
-log.info(ver)
+echo "wewbo " & ver
 app.start()
