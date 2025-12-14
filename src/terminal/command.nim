@@ -55,23 +55,22 @@ proc showHelp(subCommnads: openArray[SubCommand]) =
 proc start(subCommands: openArray[SubCommand]) =
   try:
     let nuhun = commandLineParams()[0]
-    if nuhun == "--help" or nuhun == "-h" :
+    if nuhun == "--help" or nuhun == "-h":
       subCommands.showHelp()
-      quit(0)
 
-    else :
+    else:
       for subCmd in subCommands :
         if nuhun == subCmd.name :
           subCmd.exec()
-          quit(0)
-    
-    assert false
+  
+      assert false
 
   except IndexDefect:
     subCommands.showHelp()
 
   except AssertionDefect:
     # Default entry
+    echo "Lu kesini?????"
     subCommands[0].exec(removeName = false)  
 
 export

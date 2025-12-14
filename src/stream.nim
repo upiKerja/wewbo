@@ -15,6 +15,8 @@ import
   ./player/all,
   ./terminal/paramarg
 
+from utils import exit
+
 proc setPlayer(playerName: string) : Player =
   var ple = playerName
   if players.len < 1 :
@@ -86,3 +88,5 @@ proc stream*(f: FullArgument) =
     log.info("ERROR: " & getCurrentExceptionMsg())
     log.info("This Program will close automaticly in 3 Seconds")
     sleep(3000)
+
+  exit(0)

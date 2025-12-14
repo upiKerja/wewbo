@@ -6,6 +6,7 @@ import
   terminal/paramarg
 
 from stream import askAnime
+from utils import exit
 
 proc setFormat(formatIndex: var int, values: seq[ExFormatData]) =
   let va = values.find(values.ask())
@@ -52,3 +53,4 @@ proc download*(f: FullArgument) =
     extractFormat(ept)
 
   log.info($rijal.downloadAll(episodeFormat, episodeTitle))
+  exit(0)

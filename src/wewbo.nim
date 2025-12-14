@@ -4,9 +4,7 @@ import
   version,
   terminal/[command, paramarg]
 
-import
-  illwill,
-  terminal
+from utils import exit
 
 const sourceHelp = "Select Source [kura|pahe|hime|taku]"
 
@@ -30,12 +28,4 @@ let app = [
 
 echo "wewbo " & ver
 app.start()
-
-try:
-  illwillDeinit()
-except:
-  discard
-finally:
-  showCursor()
-  eraseScreen()  
-  quit(0)
+exit(0)
