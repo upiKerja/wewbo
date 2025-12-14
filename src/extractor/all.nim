@@ -11,7 +11,7 @@ import
 
 let sukamto: Table[string, proc(ex: var BaseExtractor) {.nimcall.}] = {
   "pahe" : newAnimepahe,
-  "hian" : newHianime,
+  "hime" : newHianime,
   "kura" : newKuramanime,
   "taku" : newOtakudesu
 }.toTable

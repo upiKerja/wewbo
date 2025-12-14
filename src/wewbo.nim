@@ -6,18 +6,18 @@ import
 import
   terminal/[command, paramarg]
 
-const sourceHelp = "Select Source [kura|pahe|hian|taku]"
+const sourceHelp = "Select Source [kura|pahe|hime|taku]"
 
 let app = [
   newSubCommand(
     "stream", stream.stream, @[
-      option("-s", "source", tString, "kura", sourceHelp),
+      option("-s", "source", tString, "hime", sourceHelp),
       option("-p", "player", tString, help="Select Player [ffmpeg|mpv]")
     ]
   ),
   newSubCommand(
     "dl", download.download, @[
-      option("-s", "source", tString, "kura", sourceHelp),
+      option("-s", "source", tString, "hime", sourceHelp),
       option("--outdir", "outdir", tString, help="Define output directory"),
       option("-fps", "fps", tInt, 24, "Set Video frame per second"),
       option("-crf", "crf", tInt, 28, "Set Video CRF (For compression)"),
