@@ -55,7 +55,7 @@ proc renderLogs(l: WewboLogger, color: illwill.ForegroundColor) =
 
   for message in msgs :
     message.to(msg)
-    padding = l.width - msg.len - 2
+    padding = l.width - msg.len - 4
     l.tb.write(0, rijal, fgCyan, "║", color, "  " & msg & " ".repeat(padding), fgCyan, "║")
     rijal += 1
   
