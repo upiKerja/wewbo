@@ -8,6 +8,14 @@ An interactive terminal application for searching and watching anime from variou
 
 Wewbo is a command-line-based application that allows you to search for anime, select episodes, and watch them instantly using your favorite media player (MPV or FFplay). The application supports multiple anime sources with an easy-to-use interface.
 
+## Sources Status
+| Name | Web | Status | Issue |
+|---------|-----------|----| -- |
+| Hime  | https://hianime.to | ✅ | - |
+| Kura | https://v8.kuramanime.tel | ❌ | Cryptography |
+| Pahe | https://animepahe.to | ✅ | - |
+| Taku | https://otakudesu.best | ✅ | - |
+
 ## Install
 ### Scoop
 ```bash
