@@ -1,10 +1,10 @@
 {
-  "version": "0.8.1",
-  "hash" : "sha256:0cc5d30029fefb15b83fb5f2382a6390c68e7fa16588c5e366674f62b80f454c",
+  "version": "0.8.2",
+  "hash" : "sha256:cecb4fecb016fe4a53851d59d560f73b3e73c548211243975804d097348fd3c7",
   "bin": "wewbo.exe",
   "suggest" : {
     "mpv" : "mpv"
   },
-  "url" : "https://github.com/upi-0/wewbo/releases/download/0.8.1/wewbo-win.0.8.1.zip",
+  "url" : "https://github.com/upi-0/wewbo/releases/download/0.8.2/wewbo-win.0.8.2.zip",
   "homepage": "https://github.com/upi-0/wewbo"
 }
