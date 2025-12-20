@@ -19,11 +19,9 @@ git clone https://github.com/upi-0/wewbo
 cd wewbo
 nimble install q htmlparser illwill
 nim c src/wewbo
-./build/wewbo.exe
 ```
 
 ## Features
-
 - Search anime from various sources (Kuramanime, Animepahe, Hianime, Otakudesu)
 - Interactive and easy-to-use terminal interface
 - Support for multiple media players (MPV, FFplay)
@@ -34,30 +32,39 @@ nim c src/wewbo
 
 ## System Requirements
 
-- Windows OS
 - Media Player: MPV or FFplay installed on your system
 - Internet connection
 
 ## How to Use
 
-### Basic Commands
+### Streaming
 
 ```bash
 wewbo [anime title]
+wewbo stream [anime title]
+```
+
+### Downloading
+```bash
+wewbo dl [anime title]
 ```
 
 ### Options
+```bash
+wewbo 0.8
+list command: `wewbo [command][opts][narg]`
 
-- `-n` or `--name`: Select anime source (default: `kura`)
-- `kura` - Kuramanime
-- `pahe` - Animepahe
-- `hime` - Hianime
-- `taku` - Otakudesu
+stream
+ -s             Select Source [kura|pahe|hime|taku]
+ -p             Select Player [ffmpeg|mpv]
 
-- `-p` or `--player`: Select media player (default: `mpv`)
-- `mpv` - MPV Player
-- `ffplay` - FFplay
-
+dl
+ -s             Select Source [kura|pahe|hime|taku]
+ --outdir       Define output directory
+ -fps           Set Video frame per second
+ -crf           Set Video CRF (For compression)
+ --no-sub       Dont include subtitle (Soft-sub only)
+```
 ### Usage Examples
 
 ```bash
@@ -65,13 +72,13 @@ wewbo [anime title]
 wewbo "naruto"
 
 # Search for anime from Animepahe
-wewbo -n:pahe "one piece"
+wewbo -s:pahe "one piece"
 
 # Search for anime using FFplay as player
 wewbo -p:ffplay "attack on titan"
 
 # Option Combinations
-wewbo -n:hian -p:mpv "demon slayer"
+wewbo -s:hime -p:mpv "demon slayer"
 ```
 
 ### How It Works
@@ -93,7 +100,7 @@ Average response time by source (in seconds):
 ## Roadmap
 
 - [x] HTTP Cache (v0.7)
-- [ ] Batch Downloader (v0.8)
+- [x] Batch Downloader (v0.8)
 - [ ] Concurrently Searching (v0.9)
 - [ ] Cleaned TUI (v0.9.5)
 
@@ -108,69 +115,3 @@ Average response time by source (in seconds):
 - **Media Processing**: HLS stream extraction
 - **UI**: Terminal-based TUI with interactive selection
 
-### Project Structure
-
-```
-wewbo/
-├── src/
-│ ├── main.nim # Application entry point
-│ ├── options.nim # Parser for command-line arguments
-│ ├── process.nim # Process management
-│ ├── quick.nim # Quick utilities
-│ ├── utils.nim # General utilities
-│ │
-│ ├── extractor/ # Anime data extraction module
-│ │ ├── all.nim # Aggregator of all extractors
-│ │ ├── base.nim # Base class for extractor
-│ │ ├── types.nim # Data extractor type
-│ │ └── extractors/ # Per-source implementation
-│ │     ├── animepahe.nim
-│ │     ├── hianime.nim
-│ │     ├── kuramanime.nim
-│ │     └── otakudesu.nim
-│ │
-│ ├── http/ # HTTP client & utilities
-│ │ ├── cache.nim # HTTP cache implementation
-│ │ ├── client.nim # HTTP client wrapper
-│ │ └── response.nim # HTTP response handler
-│ │
-│ ├── media/ # Media processing
-│ │ ├── download.nim # Download manager
-│ │ ├── extractHls.nim # HLS stream extractor
-│ │ ├── translate.nim # Media URL translation
-│ │ └── types.nim # Media types
-│ │
-│ ├── player/ # Media player integration
-│ │ ├── all.nim # Player aggregator
-│ │ ├── base.nim # Base player class
-│ │ └── types.nim # Player types
-│ │
-│ ├── terminal/ # Terminal utilities
-│ │ └── paramarg.nim # Argument parser
-│ │
-│ └── ui/ # User interface
-│ ├── ask.nim # Interactive selection
-│ ├── asset.nim # UI assets
-│ ├── controller.nim # Main UI controller
-│ └── log.nim # Logging utilities
-│
-├── build/ # Build output directory
-├── dev/ # Development files
-└── README.md
-```
-
-### Main Components
-
-#### 1. Extractor System
-
-The extractor system uses an inheritance pattern with the base class `InfoExtractor`:
-
-- **Base Extractor** (`extractor/base.nim`): Provides the base interface for all extractors
-- **Concrete Extractors** (`extractor/extractors/`): Specific implementations for each anime source
-- **Types** (`extractor/types.nim`): Data types for `AnimeData`, `EpisodeData`, and `ExFormatData`
-
-#### 2. HTTP Layer
-
-- **Client** (`http/client.nim`): Wrapper for HTTP requests
-- **Cache** (`http/cache.nim`): Caching implementation to reduce redundant requests
-- **Response** (`http/response.nim`): Handler for HTTP responses

@@ -19,7 +19,7 @@ type
     log*: WewboLogger
     available*: bool = false
 
-  CliError = enum
+  CliError* = enum
     erUnknown,
     erCommandNotFound,
 
