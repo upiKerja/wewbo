@@ -2,15 +2,18 @@ import
   logger,
   extractor/all,
   ui/ask,
-  media/downloader,
+  media/[types, downloader],
   terminal/paramarg
 
 from stream import askAnime
 from sequtils import zip
 
 proc setFormat(formatIndex: var int, values: seq[ExFormatData], spami: string = "") =
-  let va = values.find(values.ask(title="select format for: " & spami))
+  let va = values.find(values.ask(title=spami))
   formatIndex = va
+
+proc setSubtitle(subtitleIndex: var int, values: seq[MediaSubtitle], spami: string = "") =
+  subtitleIndex = values.find(values.ask(title=spami))
 
 proc download*(f: FullArgument) =
   let
@@ -21,7 +24,7 @@ proc download*(f: FullArgument) =
 
   let        
     animeUrl = palla.get(anime)
-    episodes = palla.getAllEpisodeFormats(animeUrl, setFormat)
+    episodes = palla.getAllEpisodeFormats(animeUrl, setFormat, setSubtitle)
     outputCode = rijal.downloadAll(episodes.formats, episodes.titles)
 
   for (title, code) in zip(episodes.titles, outputCode) :

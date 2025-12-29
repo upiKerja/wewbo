@@ -29,6 +29,7 @@ type
 # Fallback
 type
   FbExtractEpisodeFormats* = proc(fIndex: var int; formats: seq[ExFormatData]; spami: string = "")
+  FbExtractEpisodeSubtitles* = proc(sIndex: var int; subtitles: seq[MediaSubtitle]; spami: string = "")
 
 # Exceptions
 type

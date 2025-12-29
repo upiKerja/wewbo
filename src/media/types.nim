@@ -22,7 +22,7 @@ type
   MediaFormatData* = object of RootObj
     video*: string
     typeExt*: MediaExt
-    subtitle* {.deprecated.}: Option[MediaSubtitle] = none(MediaSubtitle)
+    subtitle* : Option[MediaSubtitle] = none(MediaSubtitle)
     headers*: Option[MediaHttpHeader] = none(MediaHttpHeader)  
 
 proc detectResolution*(name: string) : MediaResolution =

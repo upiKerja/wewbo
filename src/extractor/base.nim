@@ -35,7 +35,7 @@ method get*(ex: BaseExtractor, data: ExFormatData) : MediaFormatData {.base.} = 
 
 method subtitles*(ex: BaseExtractor; fmt: ExFormatData) : Option[seq[MediaSubtitle]] {.base.} = none(seq[MediaSubtitle])
 
-method getAllEpisodeFormats*(ex: BaseExtractor; animeUrl: string; fb: FbExtractEpisodeFormats) : AllEpisodeFormats {.base.} = 
+method getAllEpisodeFormats*(ex: BaseExtractor, animeUrl: string, fbe: FbExtractEpisodeFormats, fbs: FbExtractEpisodeSubtitles) : AllEpisodeFormats {.base.} = 
   let
     episodes = ex.episodes(animeUrl)
 
@@ -46,6 +46,10 @@ method getAllEpisodeFormats*(ex: BaseExtractor; animeUrl: string; fb: FbExtractE
     episodemed: MediaFormatData
     res: MediaResolution
     episodeUrl: string
+
+  var
+    sub = none(seq[MediaSubtitle])
+    sIndex: int = -1    
     fIndex: int = -1
 
   proc extractFormat(ept: EpisodeData) =
@@ -53,16 +57,28 @@ method getAllEpisodeFormats*(ex: BaseExtractor; animeUrl: string; fb: FbExtractE
     allFormat = ex.formats(episodeUrl)
 
     if fIndex == -1:
-      fb(fIndex, allFormat, ept.title)
+      fbe(fIndex, allFormat, ept.title)
       res = allFormat[fIndex].title.detectResolution()
 
     try:
       assert allFormat[fIndex].title.detectResolution() == res
       log.info("[$#] $#" % [ex.name, "Auto selecting format for: " & ept.title])
+
       episodeMed = ex.get(allFormat[fIndex])
+      sub = ex.subtitles(allFormat[fIndex])
+
+      if sIndex == -1 and sub.isSome:
+        fbs(sIndex, sub.get, "Select Subtitle")
+        episodeMed.subtitle = sub.get[sIndex].some
+
+      elif sIndex >= -1 and sub.isSome:
+        episodeMed.subtitle = sub.get[sIndex].some
+
+      else:
+        discard        
 
     except RangeDefect, IndexDefect, AssertionDefect:
-      fb(fIndex, allFormat, ept.title)
+      fbe(fIndex, allFormat, ept.title)
       episodeMed = ex.get(allFormat[fIndex])
       
     episodeFormat.add(episodemed)      
@@ -71,7 +87,7 @@ method getAllEpisodeFormats*(ex: BaseExtractor; animeUrl: string; fb: FbExtractE
     episodeTitle.add(ept.title)
     extractFormat(ept)
 
-  return (titles: episodeTitle, formats: episodeFormat)    
+  result = (titles: episodeTitle, formats: episodeFormat)    
 
 proc info*(ex: BaseExtractor, text: string) =
   ex.lg.info("[$#] $#" % [ex.name, text])
