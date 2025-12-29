@@ -2,15 +2,13 @@ import
   logger,
   extractor/all,
   ui/ask,
-  media/[downloader, types],
+  media/downloader,
   terminal/paramarg
 
 from stream import askAnime
-from utils import exit
+from sequtils import zip
 
-var spami: string
-
-proc setFormat(formatIndex: var int, values: seq[ExFormatData]) =
+proc setFormat(formatIndex: var int, values: seq[ExFormatData], spami: string = "") =
   let va = values.find(values.ask(title="select format for: " & spami))
   formatIndex = va
 
@@ -19,46 +17,17 @@ proc download*(f: FullArgument) =
     palla = getExtractor(f["source"].getStr)
     anime = palla.askAnime(f.nargs[0])
     tdr = f["outdir"].getStr
-    rijal = newFfmpegDownloader(
-      outdir = if tdr != "": tdr else: anime.title
-    )
+    rijal = newFfmpegDownloader(outdir = if tdr != "": tdr else: anime.title)
 
   let        
-    animeUrl = palla.get anime
-    episodes = palla.episodes(animeUrl)
+    animeUrl = palla.get(anime)
+    episodes = palla.getAllEpisodeFormats(animeUrl, setFormat)
+    outputCode = rijal.downloadAll(episodes.formats, episodes.titles)
 
-  var
-    episodeTitle: seq[string]
-    episodeFormat: seq[MediaFormatData]
-    allFormat: seq[ExFormatData]
-    episodeMed: MediaFormatData
-    res: MediaResolution
-    episodeUrl: string
-    fInex: int = -1
+  for (title, code) in zip(episodes.titles, outputCode) :
+    log.info("[INFO] Inspecting")
 
-  proc extractFormat(ept: EpisodeData) =
-    episodeUrl = palla.get(ept)
-    allFormat = palla.formats(episodeUrl)
-
-    if fInex == -1 :
-      fInex.setFormat(allFormat)
-      res = allFormat[fInex].title.detectResolution()
-
-    try:
-      assert allFormat[fInex].title.detectResolution() == res
-      log.info("[dl  ] auto select for " & spami)
-      episodeMed = palla.get(allFormat[finex])
-
-    except RangeDefect, IndexDefect, AssertionDefect:
-      finex.setFormat(allFormat)
-      episodeMed = palla.get(allFormat[finex])
-      
-    episodeFormat.add(episodeMed)
-
-  for ept in episodes :
-    episodeTitle.add(ept.title)
-    spami = ept.title
-    extractFormat(ept)
-
-  log.info($rijal.downloadAll(episodeFormat, episodeTitle))
-  exit(0)
+    if code < 1:
+      log.info("[INFO] Success downloading: " & title)
+    else:
+      log.warn("[WARN] Failed downloading: " & title)
