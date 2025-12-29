@@ -35,4 +35,4 @@ export
   getExtractor
 
 export  
-  init, animes, episodes, formats, getAllEpisodeFormats, get
+  init, animes, episodes, formats, getAllEpisodeFormats, get, subtitles

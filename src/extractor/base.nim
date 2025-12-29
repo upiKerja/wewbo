@@ -33,6 +33,8 @@ method get*(ex: BaseExtractor, data: EpisodeData) : string {.base.} = data.url
 method formats*(ex: BaseExtractor, url: string) : seq[ExFormatData] {.base.} = discard
 method get*(ex: BaseExtractor, data: ExFormatData) : MediaFormatData {.base.} = discard
 
+method subtitles*(ex: BaseExtractor; fmt: ExFormatData) : Option[seq[MediaSubtitle]] {.base.} = none(seq[MediaSubtitle])
+
 method getAllEpisodeFormats*(ex: BaseExtractor; animeUrl: string; fb: FbExtractEpisodeFormats) : AllEpisodeFormats {.base.} = 
   let
     episodes = ex.episodes(animeUrl)
