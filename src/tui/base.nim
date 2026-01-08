@@ -23,13 +23,25 @@ proc renderBanner(tui: WewboTUI) =
 
   tui.currentY = 7
 
+proc crop(tui: WewboTUI; text: var string) =
+  if text.len >= tui.tb.width - 2:
+    text = text[0 .. tui.tb.width - 2 - 5]
+    text &= "..."
+
+  text = text.replace("\r", "")
+  text.stripLineEnd()
+
 proc renderBorder(tui: WewboTUI) = 
+  var tl = " $# " % [tui.head]
+  tui.crop(tl)
+
   let 
     y2 = tui.tb.height - 2
     y1 = tui.currentY + 1
     fg = tui.borderColor
-    tl = " $# " % [tui.head]
     lp = (tui.tb.width div 2) - (tl.len div 2)
+
+  tui.crop(tl)
 
   # Top
   tui.tb.write(fg)
@@ -58,14 +70,6 @@ proc add*(tui: WewboTUI; text: string; fg: illwill.ForegroundColor) =
   tui.tb.write(2, tui.currentY, fg, text)
   tui.tb.display()
   tui.currentY += 1
-
-proc crop(tui: WewboTUI; text: var string) =
-  if text.len >= tui.tb.width - 2:
-    text = text[0 .. tui.tb.width - 2 - 5]
-    text &= "..."
-
-  text = text.replace("\r", "")
-  text.stripLineEnd()
   
 proc setLineBuffer*(tui: WewboTUI; y: int; content: string; clear: bool = true; display: bool = true; crop: bool = true; fg: illwill.ForegroundColor = fgWhite; bg: illwill.BackgroundColor = bgBlack) =
   var text: string = content
