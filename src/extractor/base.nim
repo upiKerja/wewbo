@@ -24,7 +24,7 @@ type
     lg*: WewboLogger
     initialized: bool = false
 
-method animes*(ex: BaseExtractor, title: string) : seq[AnimeData] {.base.} = discard
+method animes*(ex: BaseExtractor, title: string) : seq[AnimeData] {.base, gcsafe.} = discard
 method get*(ex: BaseExtractor, data: AnimeData) : string {.base.} = data.url
 
 method episodes*(ex: BaseExtractor, url: string) : seq[EpisodeData] {.base.} = discard

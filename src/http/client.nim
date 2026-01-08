@@ -11,8 +11,6 @@ import std/[
 ]
 import ../media/types
 import ./cache
-
-# from ../logger import log, info
 import ../tui/logger as tl
 
 type
@@ -184,7 +182,7 @@ proc req*(
   host: string = "",
   payload: string = "",
   useCache: bool = true
-): Response =
+): Response {.gcsafe.} =
   var
     content: Response
     url = connection.normalize_url url
@@ -222,7 +220,7 @@ proc req*(
   host: string = "",
   payload: JsonNode = %*{},
   useCache: bool = true
-): Response =
+): Response {.gcsafe.} =
   req(connection, url, mthod, save_cookie, host, $payload, useCache)
 
 export HttpConnection, Response, HttpMethod
