@@ -2,16 +2,18 @@ import
   extractor/all,
   tui/[logger, base],
   ui/ask,
-  media/[downloader, types],
+  media/[types, downloader],
   terminal/paramarg
 
 from stream import askAnime
+from sequtils import zip
 
-var spami: string
-
-proc setFormat(formatIndex: var int, values: seq[ExFormatData]) =
-  let va = values.find(values.ask(title="select format for: " & spami))
+proc setFormat(formatIndex: var int, values: seq[ExFormatData], spami: string = "") =
+  let va = values.find(values.ask(title=spami))
   formatIndex = va
+
+proc setSubtitle(subtitleIndex: var int, values: seq[MediaSubtitle], spami: string = "") =
+  subtitleIndex = values.find(values.ask(title=spami))
 
 proc download*(f: FullArgument) =
   let
@@ -55,10 +57,10 @@ proc download*(f: FullArgument) =
       
     episodeFormat.add(episodeMed)
 
-  for ept in episodes :
-    episodeTitle.add(ept.title)
-    spami = ept.title
-    extractFormat(ept)
+  for (title, code) in zip(episodes.titles, outputCode) :
+    log.info("[INFO] Inspecting")
 
-  log.info($rijal.downloadAll(episodeFormat, episodeTitle))
-  log.close()
+    if code < 1:
+      log.info("[INFO] Success downloading: " & title)
+    else:
+      log.warn("[WARN] Failed downloading: " & title)
