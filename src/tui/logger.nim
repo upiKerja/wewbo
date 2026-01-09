@@ -46,7 +46,7 @@ proc newWewboLogger*(
   width = terminalWidth();
   konten: Option[ContentPTR] = none(ContentPTR);
   saveLog: bool = false;
-  mode: WewboLogMode = mEcho
+  mode: WewboLogMode = mTui
 ) : WewboLogger {.gcsafe.} =  
   result = WewboLogger(
     name: name,
