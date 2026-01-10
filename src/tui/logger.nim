@@ -144,4 +144,5 @@ proc stop*(l: WewboLogger; save: bool = false) =
   if save:
     writeFile("wewbo.log", join(l.logz, "\n"))
 
-  l.logAddress()[].reset()
+  if l.konten.isNone:
+    l.logAddress()[].reset()
