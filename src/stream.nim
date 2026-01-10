@@ -55,11 +55,11 @@ proc searchAll(title: string; sources: seq[string] = @["pahe", "hime"]) : Conten
         raise newException(ValueError, "Invalid Source: '$#'" % [source])
 
   proc mengontol(exName: string; title: string) : seq[AnimeData] =
-    var ex: BaseExtractor
+    var
+      ex = getExtractor(exName, "silent")
+      re = ex.animes(title)
     
-    ex = getExtractor(exName, "silent")
-    result = ex.animes(title)
-    
+    result = re
     ex.close()
 
   checkSource()
@@ -92,20 +92,16 @@ proc searchAll(title: string; sources: seq[string] = @["pahe", "hime"]) : Conten
 
   return (ex: extractor, an: animeData)
 
-proc stream*(title: string, extractorName: string, playerName: string) =
+proc stream*(title: string, extractorName: string, playerName:  string) =
   var
     anime: AnimeData
     extractor: BaseExtractor
-    cnt: Content
 
   if extractorName.contains(","):
-    var sources = extractorName.split(",")
-    cnt = searchAll(title, sources)
-    
-    extractor = cnt.ex
-    anime = cnt.an
-
-    cnt.reset()
+    (extractor, anime) = searchAll(
+      title,
+      extractorName.split(",")
+    )
 
   else:    
     try :
