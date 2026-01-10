@@ -1,5 +1,5 @@
 import
-  illwill, terminal, os, strutils, json, malebolgia
+  illwill, terminal, os, strutils, json, malebolgia, options
 
 import ui/[
   ask,
@@ -49,7 +49,7 @@ proc askEpisode(ex: BaseExtractor, ad: AnimeData) : tuple[index: int, episodes: 
 
 proc searchAll(title: string; sources: seq[string] = @["pahe", "hime"]) : Content {.gcsafe.} =
   proc checkSource =
-    const extractorsName = ["pahe", "hime", "taku", "kura"] # TODO: Jan langsung ditulis gini jir.
+    const extractorsName = listExtractor()
     for source in sources:
       if not extractorsName.contains(source):
         raise newException(ValueError, "Invalid Source: '$#'" % [source])
@@ -92,34 +92,34 @@ proc searchAll(title: string; sources: seq[string] = @["pahe", "hime"]) : Conten
 
   return (ex: extractor, an: animeData)
 
-proc stream*(title: string, extractorName: string, playerName:  string) =
+proc stream*(title: string, extractorName: string, playerName: string, log: WewboLogger) =
+  let
+    player = playerName.setPlayer()
+
   var
-    anime: AnimeData
     extractor: BaseExtractor
+    ad: AnimeData
+    adOpt: Option[AnimeData] = none(AnimeData)
 
   if extractorName.contains(","):
-    (extractor, anime) = searchAll(
+    log.warn("You are currently using experemintal feature of conc searching.")
+    log.warn("This action may cause memory leaks.")
+
+    (extractor, ad) = searchAll(
       title,
       extractorName.split(",")
     )
+    adOpt = ad.some
 
-  else:    
-    try :
-      extractor = getExtractor(extractorName)
-      anime = askAnime(extractor, title)
-
-    except AnimeNotFoundError:
-      extractor = getExtractor("pahe")
-      anime = askAnime(extractor, title)
-
-  let (start_idx, episodes) = askEpisode(extractor, anime)
+  else:
+    extractor = extractorName.getExtractor()
 
   main_controller_loop(
+    title,
     extractor,
-    playerName.setPlayer(),
-    episodes,
-    start_idx
-  )  
+    player,
+    adOpt
+  )
 
 proc stream*(f: FullArgument) =
   let log = useWewboLogger("Streaming", mode=mTui)
@@ -130,7 +130,7 @@ proc stream*(f: FullArgument) =
       plName = f["player"].getStr()
       title = f.nargs[0]
 
-    stream(title, exName, plName)
+    stream(title, exName, plName, log)
     log.close()
 
   except IndexDefect :

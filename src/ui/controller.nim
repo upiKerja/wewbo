@@ -3,7 +3,7 @@ import
 
 import
   ./ask,
-  ../extractor/all,
+  ../extractor/[all, base],
   ../player/all
 
 from httpclient import close
@@ -21,6 +21,9 @@ type
 
   Action = ref object of Questionable
     val: ControllerAction
+
+  ExtractorQuestionable = ref object of Questionable
+    val: string    
 
 proc controller_loop(
   extractor: BaseExtractor,
@@ -42,7 +45,7 @@ proc controller_loop(
     seAction = Action(title: "Select Resolution & Play", val: selectAndPlay)
     ceAction = Action(title: "Change Episode", val: changeEpisode)
     cpAction = Action(title: "Change Player", val: changePlayer)
-    csAction = Action(title: "Change Source", val: changeSource)
+    # csAction = Action(title: "Change Source", val: changeSource) || Kayanya ga skarang deh~
     exitAction = Action(title: "Exit", val: exit)
     nextAction = Action(title: "Next Episode", val: nextEpisode)
     prevAction = Action(title: "Prev Episode", val: prevEpisode)
@@ -58,7 +61,7 @@ proc controller_loop(
       actions.add prevAction
     actions.add ceAction
     actions.add cpAction
-    actions.add csAction
+    # actions.add csAction
     actions.add exitAction
 
     case actions.ask(title = episode.title).val:
@@ -107,6 +110,12 @@ proc controller_loop(
         requestChangeExtractor = true
         return
 
+proc extractors() : seq[ExtractorQuestionable] =
+  for eks in listExtractor():
+    result.add(
+      ExtractorQuestionable(title: eks, val: eks)
+    )
+
 proc main_controller_loop*(
   extractor: BaseExtractor,
   player: PLayer,
@@ -123,20 +132,36 @@ proc main_controller_loop*(
   title: string;
   extractor: BaseExtractor;
   player: Player;
+  animeDataOpt: Option[AnimeData] = none(AnimeData)
 ) =
+  let
+    anDataOpt = addr animeDataOpt
+
   var
     rijal = false
     ex = extractor
 
+  var    
+    start_idx: int
+    episodes: seq[EpisodeData]
+    animedata: AnimeData    
+
   proc to_controller =
-    var
-      animeData = extractor.ask(title)
-      (start_idx, episodes) = extractor.ask(animeData)
+    if anDataOpt[].isSome:
+      animedata = anDataOpt[].get
 
-    controller_loop(extractor, player, episodes, start_idx, false, rijal)
-
+    else:
+      animedata = ex.ask(title)
+    
+    (start_idx, episodes) = ex.ask(animedata)
+    controller_loop(ex, player, episodes, start_idx, false, rijal)
+    
   while true:
     if rijal:
-      ex = getExtractor("taku")
+      ex.close()
+      anDataOpt[] = none(AnimeData)
+      ex = getExtractor(
+        extractors().ask(title="Select new source.").val
+      )
 
     to_controller()  
