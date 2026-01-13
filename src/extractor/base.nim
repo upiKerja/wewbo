@@ -35,7 +35,24 @@ method get*(ex: BaseExtractor, data: ExFormatData) : MediaFormatData {.base.} = 
 
 method subtitles*(ex: BaseExtractor; fmt: ExFormatData) : Option[seq[MediaSubtitle]] {.base.} = none(seq[MediaSubtitle])
 
-method getAllEpisodeFormats*(ex: BaseExtractor, animeUrl: string, fbe: FbExtractEpisodeFormats, fbs: FbExtractEpisodeSubtitles) : AllEpisodeFormats {.base.} = 
+method getAllEpisodeFormats*(ex: BaseExtractor, animeUrl: string, fbe: FbExtractEpisodeFormats, fbs: FbExtractEpisodeSubtitles, s: int = -1; e: int = -1) : AllEpisodeFormats {.base.} = 
+  
+  proc normalizeIndex(ss: int; dd: int; max: int) : HSlice[int, int] {.gcsafe.} =
+    var
+      sz = ss
+      dz = dd
+
+    if dd == -1:
+      dz = max      
+    if ss == -1:
+      sz = 1
+    if dd == 0:
+      dz = sz      
+    if sz > max:
+      raise newException(ValueError, "Invalid Index.")
+    
+    return sz - 1 .. dz - 1
+  
   let
     episodes = ex.episodes(animeUrl)
 
@@ -83,7 +100,7 @@ method getAllEpisodeFormats*(ex: BaseExtractor, animeUrl: string, fbe: FbExtract
       
     episodeFormat.add(episodemed)      
 
-  for ept in episodes:
+  for ept in episodes[normalizeIndex(s, e, episodes.len)]:
     episodeTitle.add(ept.title)
     extractFormat(ept)
 

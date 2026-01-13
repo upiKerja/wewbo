@@ -28,6 +28,7 @@ let app = [
     "dl", download.download, @[
       option("-s", "source", tString, "hime", sourceHelp),
       option("--outdir", "outdir", tString, help="Define output directory"),
+      option("-e", "episode", tString, help="Episode to download. (based on index)"),
       option("-fps", "fps", tInt, 24, "Set Video frame per second"),
       option("-crf", "crf", tInt, 28, "Set Video CRF (For compression)"),
       option("--no-sub", "nsub", tBool, false, "Dont include subtitle (Soft-sub only)")

@@ -1,5 +1,5 @@
 import
-  extractor/all,
+  extractor/[all, types],
   tui/logger,
   ui/ask,
   media/[types, downloader],
@@ -7,6 +7,7 @@ import
 
 from stream import askAnime
 from sequtils import zip
+from strutils import split, parseInt, contains
 
 proc setFormat(formatIndex: var int, values: seq[ExFormatData], spami: string = "") =
   let va = values.find(values.ask(title=spami))
@@ -16,6 +17,25 @@ proc setSubtitle(subtitleIndex: var int, values: seq[MediaSubtitle], spami: stri
   subtitleIndex = values.find(values.ask(title=spami))
 
 proc download*(f: FullArgument) =
+  proc getIndex(container: seq[string], target: int, def: int) : int =
+    try:
+      result = container[target].parseInt()
+    except IndexDefect:
+      result = def
+
+  let
+    requestedIdx = f["episode"].getStr()
+
+  var
+    episodeIdx: seq[string]
+    selectedEpisodeStart: int = -1
+    selectedEpisodeEnd: int = -1
+
+  if requestedIdx != "":
+    episodeIdx = requestedIdx.split("-")
+    selectedEpisodeStart = episodeIdx.getIndex(0, -1)
+    selectedEpisodeEnd = episodeIdx.getIndex(1, 0)
+
   let
     log = newWewboLogger("Downloading")
     palla = getExtractor(f["source"].getStr)
@@ -23,9 +43,9 @@ proc download*(f: FullArgument) =
     tdr = f["outdir"].getStr
     rijal = newFfmpegDownloader(outdir = if tdr != "": tdr else: anime.title)
 
-  let        
+  let
     animeUrl = palla.get(anime)
-    episodes = palla.getAllEpisodeFormats(animeUrl, setFormat, setSubtitle)
+    episodes = palla.getAllEpisodeFormats(animeUrl, setFormat, setSubtitle, selectedEpisodeStart, selectedEpisodeEnd)
     outputCode = rijal.downloadAll(episodes.formats, episodes.titles)
 
   for (title, code) in zip(episodes.titles, outputCode) :
