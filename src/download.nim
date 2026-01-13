@@ -17,7 +17,7 @@ proc setSubtitle(subtitleIndex: var int, values: seq[MediaSubtitle], spami: stri
   subtitleIndex = values.find(values.ask(title=spami))
 
 proc download*(f: FullArgument) =
-  proc normalizeIndex(ss: int; dd: int) : FbNormalizeIndex =
+  proc normalizeIndex(ss: int; dd: int) : CBNormalizeIndex =
     proc normalizeIndexRezult(max: int) : HSlice[int, int]=
       var
         sz = ss
@@ -59,7 +59,7 @@ proc download*(f: FullArgument) =
     selectedEpisodeEnd = episodeIdx.getIndex(1, 0)
 
   let
-    fallback: FallbackEpisodes = (
+    fallback: CallbacksGetAllEpisodes = (
       episodeFormats: setFormat,
       episodeSubtitles: setSubtitle,
       normalizeIndex: normalizeIndex(selectedEpisodeStart, selectedEpisodeEnd)
