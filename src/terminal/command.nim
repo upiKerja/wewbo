@@ -59,20 +59,25 @@ proc showHelp(subCommnads: openArray[SubCommand]) =
 
 proc start(subCommands: openArray[SubCommand]) =
   try:
-    let nuhun = commandLineParams()[0]
+    let args = commandLineParams()
+    var nuhun: string
+
+    if args.len < 1:
+      subCommands.showHelp()
+      return
+
+    nuhun = args[0]
+
     if nuhun == "--help" or nuhun == "-h":
       subCommands.showHelp()
 
     else:
-      for subCmd in subCommands :
-        if nuhun == subCmd.name :
+      for subCmd in subCommands:
+        if nuhun == subCmd.name:
           subCmd.exec()
-          exit(0)
+          quit(0)
   
       assert false
-
-  except IndexDefect:
-    subCommands.showHelp()
 
   except AssertionDefect:
     # Default entry

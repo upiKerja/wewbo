@@ -2,7 +2,8 @@ import
   stream,
   download,
   version,
-  terminal/[command, paramarg]
+  terminal/[command, paramarg],
+  tui/[base, logger]
 
 import
   player/all
@@ -39,5 +40,14 @@ let app = [
   ),
 ]
 
-echo "wewbo " & ver
-app.start()
+proc main* = 
+  try:
+    app.start()
+  
+  except ref Exception:
+    loga.logger.close()
+    
+    echo "wewbo " & ver
+    echo "ERROR: " & getCurrentExceptionMsg()
+
+main()

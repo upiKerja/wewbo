@@ -100,21 +100,13 @@ proc stream*(title: string, extractorName: string, playerName: string, log: Wewb
   )
 
 proc stream*(f: FullArgument) =
-  let log = useWewboLogger("Streaming", mode=mTui)
+  if f.nargs.len < 1:
+    raise newException(ValueError, "Try: `wewbo [Anime Title]`")
 
-  try :
-    let
-      exName = f["source"].getStr()
-      plName = f["player"].getStr()
-      title = f.nargs[0]
+  let
+    log = useWewboLogger("Streaming", mode=mTui)
+    exName = f["source"].getStr()
+    plName = f["player"].getStr()
+    title = f.nargs[0]
 
-    stream(title, exName, plName, log)
-    log.close()
-
-  except IndexDefect :
-    echo "Try: `wewbo [Anime Title]`"
-    quit(1)
-
-  except ref Exception:
-    log.close()
-    echo "ERROR: " & getCurrentExceptionMsg()
+  stream(title, exName, plName, log)
