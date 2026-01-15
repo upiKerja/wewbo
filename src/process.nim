@@ -92,6 +92,8 @@ proc start(app: CliApplication, process: Process, message: string, checkup: int 
     except:
       discard # Jangan males napa lu ah  
 
+  app.log.info("ARGS: " & $app.args)
+
   while true:
     if process.running():
       stream.handleOutputBuffer(outputBuffer)
@@ -118,6 +120,7 @@ proc execute(
 
   if clearArgs :
     app.args = @[]
+
   if after.isSome :
     get(after)()
 
