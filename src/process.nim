@@ -19,7 +19,7 @@ type
     args*: seq[string]
     path: string
     process {.deprecated.}: Process
-    log: tlog.WewboLogger
+    log*: tlog.WewboLogger
     available*: bool = false
     specialLogLine*: SpecialLineProc
 

@@ -68,8 +68,9 @@ proc download*(f: FullArgument) =
     log = newWewboLogger("Downloading")
     palla = getExtractor(f["source"].getStr)
     anime = palla.ask(f.nargs[0])
-    tdr = f["outdir"].getStr
-    rijal = newFfmpegDownloader(outdir = if tdr != "": tdr else: anime.title)
+    tdr = f["outdir"].getStr()
+    sub = not f["nsub"].getBool()
+    rijal = newFfmpegDownloader(outdir = if tdr != "": tdr else: anime.title, withSub = sub)
 
   let
     animeUrl = palla.get(anime)

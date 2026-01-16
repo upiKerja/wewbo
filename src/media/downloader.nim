@@ -18,7 +18,8 @@ import
 
 import  
   ../process,
-  ../media/types
+  ../media/types,
+  ../tui/logger
 
 type
   FfmpegDownloader = ref object of CliApplication
@@ -27,9 +28,10 @@ type
     crf: int = 28
     fps: int = 25
     itr: int = 0
+    sub: bool = true
 
-proc newFfmpegDownloader*(outdir: string) : FfmpegDownloader =
-  FfmpegDownloader(name: "ffmpeg", outdir: outdir).setUp()
+proc newFfmpegDownloader*(outdir: string; withSub: bool = true) : FfmpegDownloader =
+  FfmpegDownloader(name: "ffmpeg", outdir: outdir, sub: withSub).setUp()
 
 method failureHandler(ffmpeg: FfmpegDownloader, context: CLiError) =
   raise newException(ValueError, "ffmpeg is not detected on your system.")
@@ -104,7 +106,8 @@ proc handleSubtite(ffmpeg: FfmpegDownloader, media: MediaFormatData) =
 proc deleteTempFile {.nimcall.} = removeFile("wewbo_sub_file.ass")
 
 proc download*(ffmpeg: FfmpegDownloader, input: MediaFormatData, output: string) : int =
-  if input.subtitle.isSome:
+  if input.subtitle.isSome and ffmpeg.sub:
+    ffmpeg.log.info("Extracting subtitle.")
     ffmpeg.setUpHeader(input.headers)
     ffmpeg.handleSubtite(input)
   else:  
