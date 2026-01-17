@@ -40,7 +40,7 @@ proc setUp[T: CliApplication](app: T; path: string = app.name) : T =
   app.path = path
   app.available = app.check()
   app.specialLogLine = app.specialLineCB()
-  app.log = newWewboLogger(app.name)
+  app.log = useWewboLogger(app.name)
 
   if not app.available :
     app.failureHandler(erCommandNotFound)
@@ -48,9 +48,10 @@ proc setUp[T: CliApplication](app: T; path: string = app.name) : T =
 
   app    
 
-proc start(app: CliApplication, process: Process, message: string, checkup: int = 500): int {.gcsafe.} =
+proc start(app: CliApplication, process: Process, message: string, checkup: int = 500): int {.gcsafe.} =  
   let
     isLinux = defined(linux)
+    processLogger = newWewboLogger(message)
 
   var
     outputBuffer: string
@@ -63,10 +64,10 @@ proc start(app: CliApplication, process: Process, message: string, checkup: int 
       # There may be issues related to this in the future.
 
       if not isLinux:
-        app.log.setLineBuffer(app.log.tb.height - 3, " " & line, bg=bgWhite, fg=fgBlack)
+        processLogger.setLineBuffer(processLogger.tb.height - 3, " " & line, bg=bgWhite, fg=fgBlack)
     
     elif line != "":  
-      app.log.info(line)
+      processLogger.info(line)
 
   proc handleOutputBufferWin(strm: Stream; place: var string) =
     let allOutputLog = strm.readAll()
@@ -92,7 +93,7 @@ proc start(app: CliApplication, process: Process, message: string, checkup: int 
     except:
       discard # Jangan males napa lu ah  
 
-  app.log.info("ARGS: " & $app.args)
+  processLogger.info("ARGS: " & $app.args)
 
   while true:
     if process.running():
@@ -102,7 +103,7 @@ proc start(app: CliApplication, process: Process, message: string, checkup: int 
     else:
       stream.handleOutputBuffer(outputBuffer)
       checkup.sleep()
-      app.log.stop()
+      processLogger.stop()
 
       return process.peekExitCode()  
 
@@ -116,9 +117,11 @@ proc execute(
   after: Option[AfterExecuteProc] = none(AfterExecuteProc)
 ) : int =
   let process = startProcess(app.path.findExe(), ".", app.args)
+  app.log.info("ARGS: " & $app.args)
   result = app.start(process, message)
 
   if clearArgs :
+    app.log.info("Clearing previous args")
     app.args = @[]
 
   if after.isSome :

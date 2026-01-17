@@ -129,6 +129,10 @@ proc download*(ffmpeg: FfmpegDownloader, input: MediaFormatData, output: string)
 
 proc downloadAll*(ffmpeg: FfmpegDownloader, inputs: openArray[MediaFormatData], outputs: openArray[string]) : seq[int] =
   assert inputs.len == outputs.len
+
+  ffmpeg.log.info("Downloading Options: " & $ffmpeg.options)    
+  sleep(3_000)
+
   for (input, output) in zip(inputs, outputs) :
     result.add(
       ffmpeg.download(input, output))
