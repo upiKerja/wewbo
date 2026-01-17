@@ -13,7 +13,8 @@ import
 
 import
   ../http/[client, response],
-  ../utils
+  ../utils,
+  ../tui/logger
 
 type
   M3u8XType = enum
@@ -49,7 +50,7 @@ proc types(line: string): M3u8XType =
 
 proc parseM3u8Master*(host: string, url: string, headers: MediaHttpHeader): M3u8MasterObject =
   let
-    client = newHttpConnection(host, headers)
+    client = newHttpConnection(host, headers, mode=mSilent)
     contentUrl = url # Save original URL before overwriting
     url = client.req(url).to_readable()
     lines = url.splitLines().toSeq
