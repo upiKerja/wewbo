@@ -16,7 +16,7 @@ else:
   from os import `/`, splitFile
 
 const
-  doOptimize = true
+  doOptimize = false
 
 let
   # pcre
@@ -180,17 +180,6 @@ when defined(musl):
     switch("dynlibOverride", "libssl")
     switch("dynlibOverride", "libcrypto")
 
-proc binOptimize(binFile: string) =
-  ## Optimize size of the ``binFile`` binary.
-  echo ""
-  if findExe("strip") != "":
-    echo "Running 'strip -s' .."
-    exec "strip -s " & binFile
-  if findExe("upx") != "":
-    # https://github.com/upx/upx/releases/
-    echo "Running 'upx --best' .."
-    exec "upx --best " & binFile
-
 # nim musl foo.nim
 task musl, "Builds an optimized static binary using musl":
   ## Usage: nim musl [-d:pcre] [-d:libressl|-d:openssl] <FILE1> <FILE2> ..
@@ -235,9 +224,5 @@ task musl, "Builds an optimized static binary using musl":
     # Build binary
     echo "\nRunning 'nim " & nimArgs & "' .."
     selfExec nimArgs
-
-    when doOptimize:
-      # Optimize binary
-      binOptimize(binFile)
 
     echo "\nCreated binary: " & binFile

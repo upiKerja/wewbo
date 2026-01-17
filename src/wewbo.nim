@@ -37,10 +37,11 @@ let app = [
   ),
   newSubCommand(
     "--list-players", listAvailablePlayers, help="list availabale players in your device."
-  ),
+  )
 ]
 
 proc main* = 
+  echo ver
   try:
     app.start()
   
