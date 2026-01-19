@@ -25,9 +25,10 @@ method translate*(tl: GoogleTranslator; content: string; inputLang: Languages = 
     sourceLang = inputLang.getCountryCode()
     targetLang = tl.outputLang.getCountryCode()
     url = "/m?sl=$#&tl=$#&hl=$#&q=" % [sourceLang, targetLang, sourceLang] & content
+    resp = tl.con.req(url)
 
   let    
-    html = tl.con.req(url).to_readable()
+    html = resp.to_readable()
     text = html.getBetween("<div class=\"result-container\">", "</div><div class=\"links-container\">")
 
   result = text

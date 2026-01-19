@@ -11,7 +11,7 @@ import
 
 const promptTemplateRaw = """
 SEP: " ||| "
-SYSTEM: Translate this text from $# to $# and dont answer anything else. And dont replace the {{SEP}} symbol if any.
+SYSTEM: Translate this TEXT from $# to $# non-formal and dont answer anything else. And dont replace the {{SEP}} symbol if any.
 TEXT: $#
 
 """
@@ -31,7 +31,7 @@ type
     # Internal
     headers: Option[JsonNode]
     con*: HttpConnection
-    log: WewboLogger
+    log*: WewboLogger
 
 method translate*(tl: Translator; content: string; inputLang: Languages = laEn) : string {.gcsafe,base.} = discard
 method translate*(tl: Translator; content: Content; inputLang: Languages = laEn) : Content{.gcsafe,base.}  = discard
@@ -82,4 +82,5 @@ export
   response,
   json,
   strutils,
-  types
+  types,
+  logger

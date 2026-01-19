@@ -25,11 +25,12 @@ method translate*(tl: GeminiTranslator; content: string; inputLang: Languages): 
     modelName = tl.aiOption.get.model
 
   if modelName == "":
+    tl.log.info("Using default model.")
     modelName = tl.defaultModel
 
   let
     prompt = tl.promptTemplate % [inputLang.getCountryName(), tl.outputLang.getCountryName(), content]
-    url = "/v1beta/models/$#:generateContent" % [tl.aiOption.get.model]
+    url = "/v1beta/models/$#:generateContent" % [modelName]
     payload = %*{
       "contents": [{
         "parts": [{
