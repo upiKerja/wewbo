@@ -12,10 +12,8 @@ proc put*(plate: var OptionJson; val, key: string) : void {.inline.} =
 
 proc putRange*(plate: var OptionJson; sn, bp: int; key: string; default: int = sn) : void {.inline.} =
   var s: seq[string]
-  
   if default != sn:
     s.add $default
-
   for i in sn..bp:
     s.add $i
   plate[key] = %s
@@ -37,7 +35,7 @@ export
   
 when isMainModule:
   discard """
-  import tui/questionable/option
+  import tui/ask
   var opt: OptionJson = newJObject()
 
   opt.put("default", "api")
