@@ -3,6 +3,7 @@ import
   base,
   tables,
   types,
+  strutils,
   extractors/[
     animepahe,
     kuramanime,
@@ -35,6 +36,19 @@ proc getExtractor(name: string, mode: string = "tui"): BaseExtractor {.gcsafe.} 
   result.init(
     logMode=detectLogMode(mode)
   )
+
+proc parseTitleAndSource(title, extractorName: string): tuple[anTitle: string, exName: string] =
+  var
+    exName = extractorName
+    anTitle = title
+
+  if title.contains(":"):
+    for ex in listExtractor():
+      if title.contains(ex) and title.endsWith(ex):
+        exName = title.split(":")[^1]
+        anTitle = title.replace(exName)[ 0 ..< ^1]
+
+  return (anTitle: anTitle, exName: exName)        
 
 proc ask*(ex: BaseExtractor, title: string) : AnimeData =
   var listAnime = ex.animes(title)
@@ -69,4 +83,7 @@ export
   getExtractor
 
 export  
-  init, animes, episodes, formats, getAllEpisodeFormats, get, subtitles
+  init, animes, episodes, formats
+
+export  
+  getAllEpisodeFormats, get, subtitles, parseTitleAndSource
