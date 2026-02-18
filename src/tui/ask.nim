@@ -62,9 +62,11 @@ proc ask*[T: Questionable](input: seq[T]; title: string = "Anto make kacamata") 
     of Key.End:
       selectedContentIdx = input.len - 1
       renderItems()
-    of Key.Enter:
+    of Key.Left, Key.LeftBracket:
+      return
+    of Key.Enter, Key.Right, Key.RightBracket:
       return input[selectedContentIdx]      
-    of Key.Q, Key.Escape:
+    of Key.Escape:
       illwillDeinit()
       showCursor()
       quit(0)
