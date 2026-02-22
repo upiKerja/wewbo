@@ -10,11 +10,9 @@ import std/[
   os,
 ]
 import
-  media/types,
-  tui/logger
-
-import
-  ./cache, zippy
+  ../media/types,
+  ../tui/logger,
+  ./cache
 
 type
   HttpConnection = ref object of RootObj
