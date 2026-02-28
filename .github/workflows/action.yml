@@ -42,6 +42,7 @@ jobs:
       with:
         nim-version: ${{ matrix.nim-version }}
         repo-token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Install Package
+      run: nimble build -y
 
-    - name: Compile Only Test
-      run: nim c -c src/wewbo
