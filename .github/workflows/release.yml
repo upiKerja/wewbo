@@ -1,0 +1,68 @@
+name: Release Version Bump
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Git user
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Extract release version
+        id: get_version
+        run: |
+          echo "::set-output name=version::${{ github.event.release.name }}"
+
+      - name: Update version in wewbo.nimble
+        run: |
+          version="${{ steps.get_version.outputs.version }}"
+          sed -i "s/^version = .*/version = \"$version\"/" wewbo.nimble
+
+      - name: Update version in src/version.nim
+        run: |
+          version="${{ steps.get_version.outputs.version }}"
+          sed -i "s/^const version = .*/const version = \"$version\"/" src/version.nim
+
+      - name: Commit and push changes
+        run: |
+          git add wewbo.nimble src/version.nim
+          git commit -m "chore: bump version to ${{ steps.get_version.outputs.version }} [skip ci]"
+          git push
+
+  build-linux-release:
+    runs-on: ubuntu-latest
+    if: github.event.release != null
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Nim
+        uses: jiro4989/setup-nim-action@v2
+        with:
+          nim-version: 2.2.6
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Linux binary
+        run: nim musl -d:pcre -d:openssl -d:release --mm:arc src/wewbo.nim
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/wewbo
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
