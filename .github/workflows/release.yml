@@ -36,8 +36,7 @@ jobs:
         - name: Commit and push changes
           run: |
             git add wewbo.nimble src/version.nim
-            
-            # Hanya commit jika ada perubahan (biar tidak error exit code 1)
+
             if ! git diff-index --quiet HEAD; then
               git commit -m "chore: bump version to ${{ env.tag_name }} [skip ci]"
               git push origin main
@@ -48,11 +47,16 @@ jobs:
   build-linux-release:
     runs-on: ubuntu-latest
     if: github.event.release != null
+    needs: bump-version
     steps:
+      - name: Install musl-tools
+        run: sudo apt-get update && sudo apt-get install --yes musl-tools      
+          
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: main
 
       - name: Setup Nim
         uses: jiro4989/setup-nim-action@v2
@@ -69,3 +73,4 @@ jobs:
           files: build/wewbo
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
