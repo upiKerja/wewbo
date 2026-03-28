@@ -1,8 +1,8 @@
 import
-  sequtils, json, strutils
+  sequtils, json, strutils, tables
 
 import
-  ./base
+  ./base, ../utils
 
 type
   OptionValuedQuestionable* {.inheritable.} = ref object of Questionable
@@ -26,11 +26,12 @@ proc once(title, key: var string) =
   if key == "":
     key = title
 
-proc optionQ*(options: openArray[string]; title: string = ""; key: string = "") : OptionQuestionable =
+proc optionQ*(options: openArray[string]; title: string = ""; key: string = ""; optIdx = 0) : OptionQuestionable =
   result = OptionQuestionable()
   result.options = options.toSeq
   result.title = title
   result.key = key
+  result.optionIdx = optIdx
 
   once(result.title, result.key)
 
@@ -87,15 +88,10 @@ method renderItem*(item: OptionStringQuestionable; tui: WewboTUI; is_current: bo
 
 method handleExceptionKey*(currentItem: OptionStringQuestionable; tui: WewboTUI; key: Key) : void = 
   case key
-  of Key.Space:
-    currentItem.value &= " "
   of Key.Backspace, Key.CtrlH:
     if currentItem.value != "":
       currentItem.value = currentItem.value[0 .. ^2]
-  of Key.Dot:
-    currentItem.value &= "."
   of Key.Right, Key.Left:
     discard  
-
   else:
-    currentItem.value &= ($key).toLowerAscii
+    currentItem.value &= key.toStr()  

@@ -1,8 +1,9 @@
 import
+  ../tui
+
+import
   os,
   extractor/[all, types],
-  tui/[base, logger],
-  tui/ask,
   media/[types, downloader],
   terminal/paramarg
 
@@ -16,9 +17,9 @@ proc setFormat(formatIndex: var int, values: seq[ExFormatData], spami: string = 
 proc setSubtitle(subtitleIndex: var int, values: seq[MediaSubtitle], spami: string = "") =
   subtitleIndex = values.find(values.ask(title=spami))
 
-proc download*(f: FullArgument) =
-  proc normalizeIndex(ss: int; dd: int) : CBNormalizeIndex =
-    proc normalizeIndexRezult(max: int) : HSlice[int, int]=
+proc download*(f: FullArgument) {.injectProcName, deprecated.} =
+  proc normalizeIndexProc(ss: int; dd: int) : CBNormalizeIndex =
+    proc normalizeIndexRezult(max: int) : HSlice[int, int] {.gcsafe.} =
       var
         sz = ss
         dz = dd
@@ -59,10 +60,13 @@ proc download*(f: FullArgument) =
     selectedEpisodeEnd = episodeIdx.getIndex(1, 0)
 
   let
+    fBExtractEpisodeFormats: FBExtractEpisodeFormats = setFormat
+    fBExtractEpisodeSubtitles: FBExtractEpisodeSubtitles = setSubtitle
+    cBNormalizeIndex: CBNormalizeIndex = normalizeIndexProc(selectedEpisodeStart, selectedEpisodeEnd)
     fallback: CallbacksGetAllEpisodes = (
-      episodeFormats: setFormat,
-      episodeSubtitles: setSubtitle,
-      normalizeIndex: normalizeIndex(selectedEpisodeStart, selectedEpisodeEnd)
+      episodeFormats: fBExtractEpisodeFormats,
+      episodeSubtitles: fBExtractEpisodeSubtitles,
+      normalizeIndex: cBNormalizeIndex
     )
 
   let ffmpegDownloadOption: FfmpegDownloaderOption = (

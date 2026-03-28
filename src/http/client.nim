@@ -153,7 +153,7 @@ proc reNewClient(connection: HttpConnection) =
 
   connection.client = client
 
-proc jsonToForm*(j: JsonNode): string =
+proc jsonToForm*(j: JsonNode): string {.deprecated: "use http/utils instead".} =
   var parts: seq[string] = @[]
 
   for k, v in j.pairs:
@@ -209,7 +209,7 @@ proc extractCookie(cookies: string, cookie: string) : string =
   for line in cookies.split("\n"):
     let cookieValue = line.split(";")[0].strip()
     if cookieValue.len > 0:
-      if not cookie.isNil :
+      if cookie.len > 0 :
         var existing = cookie
         if cookieValue notin existing:
           return existing & "; " & cookieValue
@@ -230,6 +230,7 @@ proc req*(
     url = connection.normalize_url url
 
   proc loadContent() : Response =
+    connection.info(url)
     try:
       return connection.client.reqq(url, mthod, payload, host)
     except ProtocolError:
@@ -260,8 +261,8 @@ proc req*(
   mthod: HttpMethod = HttpGet,
   save_cookie: bool = true,
   host: string = "",
-  payload: JsonNode = %*{},
-  useCache: bool = false
+  useCache: bool = false,
+  payload: JsonNode
 ): Response {.gcsafe.} =
   req(connection, url, mthod, save_cookie, host, $payload, useCache)
 

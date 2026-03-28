@@ -1,7 +1,9 @@
 import
-  illwill, strutils, terminal
+  illwill, strutils,
+  ../version
 
-import ../version  
+from utils import crop
+from terminal import eraseScreen
 
 type
   WewboTUI* = ref object of RootObj
@@ -26,12 +28,10 @@ proc renderBanner(tui: WewboTUI) =
   tui.currentY = 7
 
 proc crop(tui: WewboTUI; text: var string) =
-  if text.len >= tui.tb.width - 2:
-    text = text[0 .. tui.tb.width - 2 - 5]
-    text &= "..."
+  text.crop()
 
-  text = text.replace("\r", "")
-  text.stripLineEnd()
+proc writeBottomText*(tui: WewboTUI; text =  "upi-0/wewbo " & ver) = 
+  tui.tb.write(0, tui.tb.height - 1, fgWhite, text)
 
 proc renderBorder(tui: WewboTUI) = 
   var tl = " $# " % [tui.head]
@@ -66,7 +66,7 @@ proc renderBorder(tui: WewboTUI) =
   tui.tb.write(tui.tb.width - 1, y2, fg, "╝")
 
   # Easter EGG
-  tui.tb.write(0, tui.tb.height - 1, fgWhite, "upi-0/wewbo " & ver)
+  tui.writeBottomText()
 
 proc add*(tui: WewboTUI; text: string; fg: illwill.ForegroundColor) =
   tui.tb.write(2, tui.currentY, fg, text)
