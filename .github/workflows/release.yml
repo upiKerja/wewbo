@@ -9,38 +9,41 @@ permissions:
 
 jobs:
   bump-version:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      runs-on: ubuntu-latest
+      permissions:
+        contents: write
+      env:
+        tag_name: ${{ github.event.release.tag_name }}
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
+            ref: main
 
-      - name: Set up Git user
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+        - name: Set up Git user
+          run: |
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Extract release version
-        id: get_version
-        run: |
-          echo "::set-output name=version::${{ github.event.release.name }}"
+        - name: Update files
+          run: |
+            VERSION="${{ env.tag_name }}"
 
-      - name: Update version in wewbo.nimble
-        run: |
-          version="${{ steps.get_version.outputs.version }}"
-          sed -i "s/^version = .*/version = \"$version\"/" wewbo.nimble
+            sed -i "s/^version *= *\".*\"/version = \"$VERSION\"/" wewbo.nimble
+            echo "const ver* = \"$VERSION\"" > src/version.nim
 
-      - name: Update version in src/version.nim
-        run: |
-          version="${{ steps.get_version.outputs.version }}"
-          sed -i "s/^const version = .*/const version = \"$version\"/" src/version.nim
-
-      - name: Commit and push changes
-        run: |
-          git add wewbo.nimble src/version.nim
-          git commit -m "chore: bump version to ${{ steps.get_version.outputs.version }} [skip ci]"
-          git push
+        - name: Commit and push changes
+          run: |
+            git add wewbo.nimble src/version.nim
+            
+            # Hanya commit jika ada perubahan (biar tidak error exit code 1)
+            if ! git diff-index --quiet HEAD; then
+              git commit -m "chore: bump version to ${{ env.tag_name }} [skip ci]"
+              git push origin main
+            else
+              echo "No changes detected, skipping commit."
+            fi
 
   build-linux-release:
     runs-on: ubuntu-latest
