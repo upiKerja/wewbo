@@ -88,6 +88,12 @@ jobs:
     if: github.event.release != null
     needs: bump-version
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+
       - name: Download and extract wewbo DLL
         run: |
           Invoke-WebRequest -Uri "https://github.com/upi-0/wewbo/releases/download/1.0.0/wewbo-dll.zip" -OutFile "wewbo-dll.zip"
@@ -99,17 +105,11 @@ jobs:
           nim-version: 2.2.6
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: main
-
       - name: Cache Nimble packages
         uses: actions/cache@v4
         with:
           path: ~/.nimble
-          key: ${{ runner.os }}-nimble-${{ hashFiles('wewbo.nimble') }}          
+          key: ${{ runner.os }}-nimble-${{ hashFiles('*.nimble') }}          
         
       - name: Build Windows Library
         run: |
@@ -124,4 +124,4 @@ jobs:
         with:
           files: "wewbo-win.${{ env.tag_name }}.zip"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}   
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
