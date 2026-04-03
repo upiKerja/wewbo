@@ -1,1 +1,1 @@
-const ver* = "t6-windows-test"
+const ver* = "t7-windows-test"
