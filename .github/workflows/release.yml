@@ -13,13 +13,14 @@ on:
 permissions:
   contents: write
 
+env:
+  tag_name: ${{ github.event.inputs.tag_name || github.event.release.tag_name }}
+
 jobs:
   bump-version:
       runs-on: ubuntu-latest
       permissions:
         contents: write
-      env:
-        tag_name: ${{ github.event.inputs.tag_name || github.event.release.tag_name }}
       steps:
         - name: Checkout repository
           uses: actions/checkout@v4
@@ -81,3 +82,40 @@ jobs:
           files: build/wewbo
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-windows-release:
+    runs-on: windows-latest
+    if: github.event.release != null
+    needs: bump-version
+    steps:
+      - name: Download and extract wewbo DLL
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/upi-0/wewbo/releases/download/1.0.0/wewbo-dll.zip" -OutFile "wewbo-dll.zip"
+          Expand-archive -Path "wewbo-dll.zip" -DestinationPath "build"
+
+      - name: Setup Nim
+        uses: jiro4989/setup-nim-action@v2
+        with:
+          nim-version: 2.2.6
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cache Nimble packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nimble
+          key: ${{ runner.os }}-nimble-${{ hashFiles('*.nimble') }}          
+        
+      - name: Build Windows Library
+        run: |
+          nimble install illwill q htmlparser malebolgia zippy -y
+          nim c -d:release --mm:arc --multimethods:on src/wewbo
+
+      - name: Extract compiled binary
+        run: Compress-archive -Path "build/*" -DestinationPath "wewbo-win.${{ env.tag_name }}.zip"
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "wewbo-win.${{ env.tag_name }}.zip"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
