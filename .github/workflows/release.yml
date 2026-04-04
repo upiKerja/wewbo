@@ -15,6 +15,8 @@ permissions:
 
 env:
   tag_name: ${{ github.event.inputs.tag_name || github.event.release.tag_name }}
+  nim_ver: 2.2.6
+  mount_ver: 1.0.0
 
 jobs:
   bump-version:
@@ -68,7 +70,7 @@ jobs:
       - name: Setup Nim
         uses: jiro4989/setup-nim-action@v2
         with:
-          nim-version: 2.2.6
+          nim-version: ${{ env.nim_ver }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Linux binary
@@ -96,20 +98,20 @@ jobs:
 
       - name: Download and extract wewbo DLL
         run: |
-          Invoke-WebRequest -Uri "https://github.com/upi-0/wewbo/releases/download/1.0.0/wewbo-dll.zip" -OutFile "wewbo-dll.zip"
+          Invoke-WebRequest -Uri "https://github.com/upi-0/wewbo/releases/download/${{ env.mount_ver }}/wewbo-dll.zip" -OutFile "wewbo-dll.zip"
           Expand-archive -Path "wewbo-dll.zip" -DestinationPath "build"
 
       - name: Setup Nim
         uses: jiro4989/setup-nim-action@v2
         with:
-          nim-version: 2.2.6
+          nim-version: ${{ env.nim_ver }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Cache Nimble packages
         uses: actions/cache@v4
         with:
           path: ~/.nimble
-          key: ${{ runner.os }}-nimble-${{ hashFiles('wewbo.nimble') }}          
+          key: ${{ runner.os }}-nimble-${{ env.mount_ver }}        
         
       - name: Build Windows Library
         run: |
