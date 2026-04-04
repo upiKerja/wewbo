@@ -106,12 +106,6 @@ jobs:
         with:
           nim-version: ${{ env.nim_ver }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Cache Nimble packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.nimble
-          key: ${{ runner.os }}-nimble-${{ env.mount_ver }}        
         
       - name: Build Windows Library
         run: |
