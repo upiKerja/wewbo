@@ -116,7 +116,7 @@ jobs:
           nimble install illwill q htmlparser malebolgia zippy -y
           nim c -d:release --mm:arc --multimethods:on "src/wewbo"
 
-      - name: Extract compiled binary
+      - name: Compress Builded Directory
         run: Compress-archive -Path "build/*" -DestinationPath "wewbo-win.${{ env.tag_name }}.zip"
 
       - name: Create scoop manifest json
