@@ -109,7 +109,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.nimble
-          key: ${{ runner.os }}-nimble-${{ hashFiles('*.nimble') }}          
+          key: ${{ runner.os }}-nimble-${{ hashFiles('wewbo.nimble') }}          
         
       - name: Build Windows Library
         run: |
@@ -139,7 +139,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            "wewbo-win.${{ env.tag_name }}.zip"
-            "wewbo.json"
+            wewbo-win.${{ env.tag_name }}.zip
+            wewbo.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
