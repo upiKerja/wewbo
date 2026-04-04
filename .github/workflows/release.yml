@@ -122,7 +122,7 @@ jobs:
       - name: Create scoop manifest json
         run: | 
           $version = "${{ env.tag_name }}"
-          $hash = "sha256:" + (Get-Filehash -Path "build/wewbo-win.${{ env.tag_name }}.zip").Hash
+          $hash = "sha256:" + (Get-Filehash -Path "wewbo-win.${{ env.tag_name }}.zip").Hash
           $url = "${{ github.server_url }}/${{ github.repository }}/releases/download/$version/wewbo-win.$version.zip"
           $homepage = "https://github.com/upi-0/wewbo"
           
