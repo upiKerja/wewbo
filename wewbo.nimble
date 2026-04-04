@@ -1,6 +1,6 @@
 # Package
 
-version = "t9"
+version = "t10"
 author        = "upi-0"
 description   = "An interactive terminal application for streaming and downloading anime from various streaming sources."
 license       = "GPL-3.0"
